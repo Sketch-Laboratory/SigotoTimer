@@ -6,11 +6,15 @@
         xmlns:local="clr-namespace:SigotoTimer"
         mc:Ignorable="d"
         Topmost="True"
-        Title="SigotoTimer" Height="100" Width="200" WindowStyle="ToolWindow">
+        AllowsTransparency="True"
+        Title="SigotoTimer" Height="55" Width="200" WindowStyle="ToolWindow">
+    <Window.Background>
+        <SolidColorBrush Opacity="0.8" Color="Black"/>
+    </Window.Background>
     <Grid>
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
-            <Label x:Name="StateTImer"  Content="Timer" HorizontalAlignment="Center" FontSize="18"/>
-            <Label x:Name="StateDesc" Content="Desc" HorizontalAlignment="Center" FontSize="11"/>
+            <Label x:Name="StateTImer" Content="Timer" HorizontalAlignment="Center" FontSize="18" Foreground="White"/>
+            <Label x:Name="StateDesc" Content="Desc" HorizontalAlignment="Center" FontSize="11" Foreground="White"/>
         </StackPanel>
     </Grid>
 </Window>

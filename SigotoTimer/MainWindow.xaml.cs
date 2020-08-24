@@ -23,12 +23,33 @@ namespace SigotoTimer
     /// </summary>
     public partial class MainWindow : Window
     {
+        private SolidColorBrush commonBackgroundBrush;
+        private SolidColorBrush accentBackgroundBrush;
+        private SolidColorBrush commonTextBrush;
+        private SolidColorBrush accentTextBrush;
+
+        private bool _accentTick = false;
+
         public MainWindow()
         {
             InitializeComponent();
             loadSettings();
             startParallelThread();
             initializeNoBorderWindow();
+
+            bgBlinkThread = new Thread(new ThreadStart(delegate
+            {
+                while (true)
+                {
+                    runOnUIThread(delegate
+                    {
+                        this.Background = _accentTick ? accentBackgroundBrush : commonBackgroundBrush;
+                        this.StateTImer.Foreground = _accentTick ? commonTextBrush : accentTextBrush;
+                        _accentTick = !_accentTick;
+                    });
+                    Thread.Sleep(300);
+                }
+            }));
         }
 
         private void runOnUIThread(Action func)
@@ -45,7 +66,16 @@ namespace SigotoTimer
                 IniFile ini = new IniFile();
                 ini.Load("./config.ini");
                 this.Topmost = ini["Window"]["TopMost"].ToBool();
+                commonBackgroundBrush = (SolidColorBrush)new BrushConverter().ConvertFrom($"#{ini["Window"]["Background"].ToString()}");
+                commonBackgroundBrush.Opacity = ini["Window"]["BackgroundOpacity"].ToDouble();
+                accentBackgroundBrush = (SolidColorBrush)new BrushConverter().ConvertFrom($"#{ini["Window"]["BackgroundAccent"].ToString()}");
+                accentBackgroundBrush.Opacity = ini["Window"]["BackgroundOpacity"].ToDouble();
+                this.Background = commonBackgroundBrush;
+                commonTextBrush = (SolidColorBrush)(new BrushConverter().ConvertFrom($"#{ini["Window"]["TextColor"].ToString()}"));
+                accentTextBrush = (SolidColorBrush)(new BrushConverter().ConvertFrom($"#{ini["Window"]["TextColorAccent"].ToString()}"));
                 notificationDuration = ini["Schadenfreude"]["PleaseDoWorkNotiDuration"].ToInt();
+                this.StateDesc.Foreground = commonTextBrush;
+                this.StateTImer.Foreground = commonTextBrush;
             }
             catch
             {
@@ -121,16 +151,22 @@ namespace SigotoTimer
             });
         }
 
+        Thread bgBlinkThread;
+
         private void DoWorkNotification()
         {
             isNotificationSending = true;
             BlinkWindow.FlashWindow(this);
+            bgBlinkThread.Start();
         }
 
         private void StopDoWorkNotification()
         {
             isNotificationSending = false;
             BlinkWindow.StopFlashingWindow(this);
+            bgBlinkThread.Abort();
+            Background = commonBackgroundBrush;
+            StateTImer.Foreground = commonTextBrush;
         }
 
         #endregion
