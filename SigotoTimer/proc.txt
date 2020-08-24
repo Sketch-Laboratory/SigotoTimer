@@ -1,0 +1,5 @@
+﻿SigotoTimer
+devenv
+SourceTree
+Code
+studio64

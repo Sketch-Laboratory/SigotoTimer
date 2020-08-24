@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -25,34 +26,28 @@ namespace SigotoTimer
         public MainWindow()
         {
             InitializeComponent();
-            InitializeConsole();
             startParallelThread();
-        }
-
-        private void InitializeConsole()
-        {
-            #if DEBUG
-            ConsoleManager.Init();
-            ConsoleManager.Show();
-            #endif
         }
 
         private void startParallelThread()
         {
+            var procNames = readTargetProcesses();
             Task.Factory.StartNew(delegate
             {
                 var client = new Schadenfreude();
-                var procName = "devenv";
                 while (true)
                 {
                     bool activated = false;
-                    var procs = Process.GetProcessesByName(procName);
-                    foreach (var proc in procs)
+                    foreach (var procName in procNames)
                     {
-                        if(client.ApplicationIsActivated(proc.Id))
+                        var procs = Process.GetProcessesByName(procName);
+                        foreach (var proc in procs)
                         {
-                            activated = true;
-                            break;
+                            if (client.ApplicationIsActivated(proc.Id))
+                            {
+                                activated = true;
+                                break;
+                            }
                         }
                     }
 
@@ -68,6 +63,12 @@ namespace SigotoTimer
                     Thread.Sleep(1000);
                 }
             });
+        }
+
+        private string[] readTargetProcesses()
+        {
+            var lines = File.ReadAllLines("proc.txt");
+            return lines;
         }
     }
 }
