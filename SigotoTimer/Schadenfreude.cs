@@ -23,14 +23,23 @@ namespace SigotoTimer
         public bool Watch()
         {
             bool activated = false;
-            foreach (var procName in procNames)
+            for(int i= 0; i< procNames.Length; i++)
             {
+                var procName = procNames[i];
+                var ignore = false;
+                if (procName.StartsWith("!"))
+                {
+                    procName = procName.Substring(1);
+                    ignore = true;
+                }
+
                 var procs = Process.GetProcessesByName(procName);
                 foreach (var proc in procs)
                 {
                     if (this.ApplicationIsActivated(proc.Id))
                     {
-                        activated = true;
+                        if(!ignore) activated = true;
+                        else activated = lastActivatedState == null ? false : (bool)lastActivatedState;
                         break;
                     }
                 }
