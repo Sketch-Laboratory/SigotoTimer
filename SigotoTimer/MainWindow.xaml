@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:SigotoTimer"
         mc:Ignorable="d"
         Topmost="True"
+        ShowInTaskbar="False"
         AllowsTransparency="True"
         Title="SigotoTimer" Height="55" Width="200" WindowStyle="ToolWindow">
     <Window.Background>
