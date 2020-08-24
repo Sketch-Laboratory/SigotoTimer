@@ -12,6 +12,7 @@ namespace SigotoTimer
     {
         private string[] procNames;
         public event Action onActivated, onDeactivated;
+        public event Action<bool> onWatch;
 
         public Schadenfreude(string[] procNames)
         {
@@ -41,6 +42,7 @@ namespace SigotoTimer
                 else onDeactivated?.Invoke();
                 lastActivatedState = activated;
             }
+            onWatch?.Invoke(activated);
 
             return activated;
         }

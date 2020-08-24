@@ -57,37 +57,16 @@ namespace SigotoTimer
 
         #region Schadenfreude
 
-        private void Client_onDeactivated()
-        {
-            Console.WriteLine("Deactivated");
-            tick = 1;
-            isActivated = false;
-
-            runOnUIThread(delegate {
-                StateDesc.Content = "머리 식히는 중";
-            });
-        }
-
-        private void Client_onActivated()
-        {
-            Console.WriteLine("Activated");
-            tick = 1;
-            isActivated = true;
-
-            runOnUIThread (delegate {
-                StateDesc.Content = "일에 집중하는 중";
-            });
-        }
-
         private string[] readTargetProcessNames()
         {
             var lines = File.ReadAllLines("./proc.txt");
             return lines;
         }
 
-        bool isActivated = false;
         long tick = 0;
         long notificationDuration = 0;
+        bool isNotificationSending = false;
+
         private void startParallelThread()
         {
             Task.Factory.StartNew(delegate
@@ -96,19 +75,62 @@ namespace SigotoTimer
                 var client = new Schadenfreude(procNames);
                 client.onActivated += Client_onActivated;
                 client.onDeactivated += Client_onDeactivated;
+                client.onWatch += Client_onWatch;
                 while (true)
                 {
                     client.Watch();
-
-                    runOnUIThread(delegate
-                    {
-                        StateTImer.Content = $"{tick++}초 째";
-                    });
-
-
                     Thread.Sleep(1000);
                 }
             });
+        }
+
+        private void Client_onActivated()
+        {
+            Console.WriteLine("Activated");
+            tick = 1;
+
+            runOnUIThread(delegate {
+                StateDesc.Content = "일에 집중하는 중";
+            });
+        }
+
+        private void Client_onDeactivated()
+        {
+            Console.WriteLine("Deactivated");
+            tick = 1;
+
+            runOnUIThread(delegate {
+                StateDesc.Content = "머리 식히는 중";
+            });
+        }
+
+        private void Client_onWatch(bool isActivated)
+        {
+            runOnUIThread(delegate
+            {
+                StateTImer.Content = $"{tick++}초 째";
+
+                if(isActivated && isNotificationSending)
+                {
+                    StopDoWorkNotification();
+                }
+                else if (!isActivated && !isNotificationSending && tick > notificationDuration )
+                {
+                    DoWorkNotification();
+                }
+            });
+        }
+
+        private void DoWorkNotification()
+        {
+            isNotificationSending = true;
+            BlinkWindow.FlashWindow(this);
+        }
+
+        private void StopDoWorkNotification()
+        {
+            isNotificationSending = false;
+            BlinkWindow.StopFlashingWindow(this);
         }
 
         #endregion
