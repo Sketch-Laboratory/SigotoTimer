@@ -1,6 +1,8 @@
 # SigotoTimer
 ![미리보기](./GIF.gif)
 
+[다운로드](https://github.com/Sketch-Laboratory/SigotoTimer/releases/latest)
+
 IDE에서 포커스가 벗어난 채로 방치하면 프로그램이 발광합니다.
 
 자꾸 일 안하고 딴짓만 해서 집중하려고 만든 프로그램.
