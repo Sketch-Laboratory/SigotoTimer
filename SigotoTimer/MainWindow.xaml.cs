@@ -26,7 +26,9 @@ namespace SigotoTimer
         public MainWindow()
         {
             InitializeComponent();
+            loadSettings();
             startParallelThread();
+            initializeNoBorderWindow();
         }
 
         private void runOnUIThread(Action func)
@@ -34,10 +36,32 @@ namespace SigotoTimer
             this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, func);
         }
 
+        #region Load Settings
+
+        private void loadSettings()
+        {
+            try
+            {
+                IniFile ini = new IniFile();
+                ini.Load("./config.ini");
+                this.Topmost = ini["Window"]["TopMost"].ToBool();
+                notificationDuration = ini["Schadenfreude"]["PleaseDoWorkNotiDuration"].ToInt();
+            }
+            catch
+            {
+
+            }
+        }
+
+        #endregion
+
+        #region Schadenfreude
+
         private void Client_onDeactivated()
         {
             Console.WriteLine("Deactivated");
             tick = 1;
+            isActivated = false;
 
             runOnUIThread(delegate {
                 StateDesc.Content = "머리 식히는 중";
@@ -48,6 +72,7 @@ namespace SigotoTimer
         {
             Console.WriteLine("Activated");
             tick = 1;
+            isActivated = true;
 
             runOnUIThread (delegate {
                 StateDesc.Content = "일에 집중하는 중";
@@ -60,7 +85,9 @@ namespace SigotoTimer
             return lines;
         }
 
+        bool isActivated = false;
         long tick = 0;
+        long notificationDuration = 0;
         private void startParallelThread()
         {
             Task.Factory.StartNew(delegate
@@ -78,10 +105,29 @@ namespace SigotoTimer
                         StateTImer.Content = $"{tick++}초 째";
                     });
 
+
                     Thread.Sleep(1000);
                 }
             });
         }
 
+        #endregion
+
+        #region No-Border Window
+
+        private void initializeNoBorderWindow()
+        {
+            this.WindowStyle = WindowStyle.None;
+            this.ResizeMode = ResizeMode.NoResize;
+            this.MouseDown += MainWindow_MouseDown;
+        }
+
+        private void MainWindow_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                this.DragMove();
+        }
+
+        #endregion
     }
 }
