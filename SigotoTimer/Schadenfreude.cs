@@ -4,11 +4,49 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 
 namespace SigotoTimer
 {
     class Schadenfreude
     {
+        private string[] procNames;
+        public event Action onActivated, onDeactivated;
+
+        public Schadenfreude(string[] procNames)
+        {
+            this.procNames = procNames;
+        }
+
+
+        private bool? lastActivatedState = null;
+        public void Watch()
+        {
+            bool activated = false;
+            foreach (var procName in procNames)
+            {
+                var procs = Process.GetProcessesByName(procName);
+                foreach (var proc in procs)
+                {
+                    if (this.ApplicationIsActivated(proc.Id))
+                    {
+                        activated = true;
+                        break;
+                    }
+                }
+            }
+
+            if (lastActivatedState == null || lastActivatedState != activated)
+            {
+                if (activated) onActivated?.Invoke();
+                else onDeactivated?.Invoke();
+                lastActivatedState = activated;
+            }
+        }
+
+
+        #region DLL Import
+
         /// <summary>Returns true if the current application has focus, false otherwise</summary>
         public bool ApplicationIsActivated(int procId)
         {
@@ -30,5 +68,7 @@ namespace SigotoTimer
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int GetWindowThreadProcessId(IntPtr handle, out int processId);
+
+        #endregion
     }
 }

@@ -31,44 +31,46 @@ namespace SigotoTimer
 
         private void startParallelThread()
         {
-            var procNames = readTargetProcesses();
             Task.Factory.StartNew(delegate
             {
-                var client = new Schadenfreude();
+                var procNames = readTargetProcessNames();
+                var client = new Schadenfreude(procNames);
+                client.onActivated += Client_onActivated;
+                client.onDeactivated += Client_onDeactivated;
                 while (true)
                 {
-                    bool activated = false;
-                    foreach (var procName in procNames)
-                    {
-                        var procs = Process.GetProcessesByName(procName);
-                        foreach (var proc in procs)
-                        {
-                            if (client.ApplicationIsActivated(proc.Id))
-                            {
-                                activated = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if(activated)
-                    {
-                        Console.WriteLine("Activated.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("De-Activated.");
-                    }
-
+                    client.Watch();
                     Thread.Sleep(1000);
                 }
             });
         }
 
-        private string[] readTargetProcesses()
+        private void Client_onDeactivated()
         {
-            var lines = File.ReadAllLines("proc.txt");
+            runOnUIThread(delegate {
+                this.Title = "Dectivated";
+                Console.WriteLine(this.Title);
+            });
+        }
+
+        private void Client_onActivated()
+        {
+            runOnUIThread (delegate {
+                this.Title = "Activated";
+                Console.WriteLine(this.Title);
+            });
+        }
+
+        private string[] readTargetProcessNames()
+        {
+            var lines = File.ReadAllLines("./proc.txt");
             return lines;
         }
+
+        private void runOnUIThread(Action func)
+        {
+            this.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, func);
+        }
+
     }
 }
