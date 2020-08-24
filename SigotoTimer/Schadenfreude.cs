@@ -18,9 +18,8 @@ namespace SigotoTimer
             this.procNames = procNames;
         }
 
-
         private bool? lastActivatedState = null;
-        public void Watch()
+        public bool Watch()
         {
             bool activated = false;
             foreach (var procName in procNames)
@@ -42,6 +41,8 @@ namespace SigotoTimer
                 else onDeactivated?.Invoke();
                 lastActivatedState = activated;
             }
+
+            return activated;
         }
 
 

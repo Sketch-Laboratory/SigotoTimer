@@ -5,8 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SigotoTimer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="100" Width="200" WindowStyle="ToolWindow">
+        Topmost="True"
+        Title="SigotoTimer" Height="100" Width="200" WindowStyle="ToolWindow">
     <Grid>
-        
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
+            <Label x:Name="StateTImer"  Content="Timer" HorizontalAlignment="Center" FontSize="18"/>
+            <Label x:Name="StateDesc" Content="Desc" HorizontalAlignment="Center" FontSize="11"/>
+        </StackPanel>
     </Grid>
 </Window>
